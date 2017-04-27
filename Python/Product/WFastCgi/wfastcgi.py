@@ -276,9 +276,9 @@ def read_fastcgi_input(stream, req_id, content):
     wsgi environment array"""
     res = _REQUESTS[req_id].params
     if 'wsgi.input' not in res:
-        res['wsgi.input'] = content
-    else:
-        res['wsgi.input'] += content
+        res['wsgi.input'] = BytesIO()
+    
+    res['wsgi.input'].write(content)
 
     if not content:
         # we've hit the end of the input stream, time to process input...
@@ -666,7 +666,7 @@ class handle_response(object):
 
     def __enter__(self):
         record = self.record
-        record.params['wsgi.input'] = BytesIO(record.params['wsgi.input'])
+        record.params['wsgi.input'] = BytesIO(record.params['wsgi.input'].getvalue())
         record.params['wsgi.version'] = (1, 0)
         record.params['wsgi.url_scheme'] = 'https' if record.params.get('HTTPS', '').lower() == 'on' else 'http'
         record.params['wsgi.multiprocess'] = True
